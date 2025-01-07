@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class CarServiceHistoryDTO {
-    private String carId; // ID samochodu
+    private String carId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private String problem;

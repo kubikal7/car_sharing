@@ -20,11 +20,8 @@ public class Cars {
     @ManyToOne
     @JoinColumn(name = "car_type_id")
     private CarType carType;
-
     private int year;
-
     private String color;
-
     private double price_per_day;
 
     @Enumerated(EnumType.STRING)

@@ -15,7 +15,7 @@ public class CarType {
     private Long id;
     private String brand;
     private String model;
+
     @Column(name="nr_of_seats")
     private int nrOfSeats;
-
 }

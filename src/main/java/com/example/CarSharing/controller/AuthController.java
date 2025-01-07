@@ -37,12 +37,12 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<Users> userOPT = usersRepository.findByEmail(loginRequest.getEmail());
 
-        // Sprawdzenie poprawności hasła (porównanie zahashowanego hasła)
+        //poprawność hasła (porównanie zahashowanego hasła)
         if (userOPT.isPresent() && passwordEncoder.matches(loginRequest.getPassword(), userOPT.get().getPassword())) {
             Users user = userOPT.get();
             String token = generateUniqueToken();
 
-            // Zapisanie tokena w bazie danych
+            //token do bazy danych
             user.setToken(token);
             usersRepository.save(user);
 
@@ -55,8 +55,8 @@ public class AuthController {
     private String generateUniqueToken() {
         String token;
         do {
-            token = UUID.randomUUID().toString();  // Generowanie nowego tokena
-        } while (usersRepository.existsByToken(token));  // Sprawdzanie, czy token już istnieje w bazie
+            token = UUID.randomUUID().toString();  //generowanie nowego tokena
+        } while (usersRepository.existsByToken(token));  //czy token już istnieje w bazie
         return token;
     }
 
@@ -72,16 +72,14 @@ public class AuthController {
             }
         }
 
-        // Sprawdzenie, czy użytkownik o takim e-mailu już istnieje
+        //czy użytkownik o takim e-mailu już istnieje
         if (usersRepository.findByEmail(newUser.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
         }
 
-
-        // Haszowanie hasła
+        //haszowanie hasła
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
-        // Zapisanie użytkownika
         usersRepository.save(newUser);
 
         return ResponseEntity.ok("User registered successfully");

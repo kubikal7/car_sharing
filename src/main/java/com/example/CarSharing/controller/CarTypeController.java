@@ -41,7 +41,11 @@ public class CarTypeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getCarType(@PathVariable Long id){
-        return ResponseEntity.ok(carTypeRepository.findById(id));
+        Optional<CarType> carTypeOpt = carTypeRepository.findById(id);
+        if(carTypeOpt.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car type not found");
+        }
+        return ResponseEntity.ok(carTypeOpt.get());
     }
 
     @PutMapping("/{id}")
