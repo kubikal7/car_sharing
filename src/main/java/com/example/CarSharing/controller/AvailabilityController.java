@@ -2,9 +2,12 @@ package com.example.CarSharing.controller;
 
 import com.example.CarSharing.model.Cars;
 import com.example.CarSharing.model.DetailsOfTransaction;
+import com.example.CarSharing.model.enums.CarsStatusEnum;
 import com.example.CarSharing.model.enums.DetailsStatusEnum;
 import com.example.CarSharing.repository.CarsRepository;
 import com.example.CarSharing.repository.DetailsOfTransactionRepository;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -61,7 +64,7 @@ public class AvailabilityController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start and end dates are required.");
         }
 
-        List<Cars> allCars = carsRepository.findAll();
+        List<Cars> allCars = carsRepository.findByStatusNot(CarsStatusEnum.not);
         List<Cars> result = allCars.stream()
                 .filter(car -> {
                     List<DetailsOfTransaction> dtList = detailsRepository.findByCarId(car.getId());
@@ -79,13 +82,25 @@ public class AvailabilityController {
         return ResponseEntity.ok(result);
     }
 
+    @Getter
+    @Setter
+    public static class DateRangeRequest {
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        private LocalDateTime startDate;
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        private LocalDateTime endDate;
+    }
+
     //endpoint sprawdzania dostępności konkretnego samochodu w określonym czasie
     @GetMapping("/{id}")
     public ResponseEntity<?> isCarAvailable(
             @PathVariable String id,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate
+            @RequestBody DateRangeRequest dateRangeRequest
     ){
+        LocalDateTime startDate = dateRangeRequest.getStartDate();
+        LocalDateTime endDate = dateRangeRequest.getEndDate();
+
         Optional<Cars> carOpt = carsRepository.findById(id);
         if(carOpt.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found");

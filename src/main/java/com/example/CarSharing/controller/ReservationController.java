@@ -158,6 +158,10 @@ public class ReservationController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("New reservation period must have the same number of days as the original");
         }
 
+        if(newDays<1)
+            newDays=1;
+
+
         //czy data startu nie jest późniejsza niż data zakończenia
         if (req.getNewStart().isAfter(req.getNewEnd())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start date cannot be after end date");
@@ -178,6 +182,7 @@ public class ReservationController {
         dt.setStart_date(req.getNewStart());
         dt.setEnd_date(req.getNewEnd());
         dt.setPrice(dt.getCar().getPrice_per_day() * newDays);
+
         detailsRepository.save(dt);
 
         return ResponseEntity.ok("Reservation updated. New price= " + dt.getPrice());

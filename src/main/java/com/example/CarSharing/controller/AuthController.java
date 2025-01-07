@@ -33,7 +33,7 @@ public class AuthController {
         private String password;
     }
 
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<Users> userOPT = usersRepository.findByEmail(loginRequest.getEmail());
 
