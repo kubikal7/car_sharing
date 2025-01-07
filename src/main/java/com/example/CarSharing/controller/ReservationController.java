@@ -66,6 +66,21 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+    @GetMapping("/user/reservations")
+    public ResponseEntity<?> getReservationsByToken(
+            @RequestHeader("Authorization") String token
+    ){
+        Optional<Users> requestingUser = usersRepository.findByToken(token);
+        if(requestingUser.isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
+
+        List<DetailsOfTransaction> reservations = detailsRepository.findByUserId((long) requestingUser.get().getId());
+        
+        return ResponseEntity.ok(reservations);
+    }
+
+
     //rezerwacja
     @PostMapping("/reserve")
     public ResponseEntity<?> reserveCar(
