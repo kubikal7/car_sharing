@@ -22,10 +22,7 @@ public class CarServiceHistory {
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Cars car;
-
     private LocalDateTime start_date;
-
     private LocalDateTime end_date;
-
     private String problem;
 }

@@ -1,6 +1,8 @@
 package com.example.CarSharing.model;
 
 import com.example.CarSharing.model.enums.PaymentMethodEnum;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,12 +17,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "details_of_transaction_id")
     private DetailsOfTransaction detailsOfTransaction;
 
