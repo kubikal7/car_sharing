@@ -12,8 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/auth")
@@ -72,11 +75,18 @@ public class AuthController {
             }
         }
 
+
         //czy użytkownik o takim e-mailu już istnieje
         if (usersRepository.findByEmail(newUser.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email already in use");
         }
 
+        int age = (int) ChronoUnit.YEARS.between(newUser.getDate_of_birth(), LocalDate.now());
+        if (age < 18) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User must be at least 18 years old");
+        }
+
+        System.out.println(newUser);
         //haszowanie hasła
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
 

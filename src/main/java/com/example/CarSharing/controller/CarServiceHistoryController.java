@@ -113,9 +113,7 @@ public class CarServiceHistoryController {
         carServiceHistoryRepository.save(carServiceHistory);
 
         //aktualizuj status auta (np. na 'not')
-        car.setStatus(CarsStatusEnum.not);
-        carsRepository.save(car);
 
-        return ResponseEntity.ok("Service history added, car status updated to 'not'");
+        return ResponseEntity.ok("Service history added");
     }
 }

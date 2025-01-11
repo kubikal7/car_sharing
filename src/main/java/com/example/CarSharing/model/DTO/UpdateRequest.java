@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class UpdateRequest {
-    private Long transactionId;
     private LocalDateTime newStart;
     private LocalDateTime newEnd;
 }

@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -52,13 +53,39 @@ public class PaymentController {
         return ResponseEntity.ok(paymentOpt.get());
     }
 
+    @GetMapping("/user/{userID}")
+    public ResponseEntity<?> getUserPayments(@RequestHeader("Authorization") String token, @PathVariable long userID){
+        Optional<Users> userOPTtoken = usersRepository.findByToken(token);
+        Optional<Users> userOPT = usersRepository.findById(userID);
+
+        if(userOPT.isEmpty() || userOPTtoken.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        if(userOPT.get().getId()!=userOPTtoken.get().getId() && !authService.isAdmin(token))
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        List<Payment> payments = paymentRepository.findByUser(userOPT.get());
+        return ResponseEntity.ok(payments);
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getUserPaymentsByToken(@RequestHeader("Authorization") String token){
+        Optional<Users> userOPTtoken = usersRepository.findByToken(token);
+        if(userOPTtoken.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        List<Payment> payments = paymentRepository.findByUser(userOPTtoken.get());
+        return ResponseEntity.ok(payments);
+    }
+
     //endpoint dokonywania płatności
     // PaymentController.java
 
-    @PostMapping("/pay")
+    @PostMapping("/pay/{transactionID}")
     public ResponseEntity<?> payForTransaction(
             @RequestHeader("Authorization") String token,
-            @RequestBody PaymentRequestDTO req
+            @RequestBody PaymentRequestDTO req,
+            @PathVariable long transactionID
     ) {
         var userOpt = usersRepository.findByToken(token);
         if (userOpt.isEmpty()) {
@@ -66,7 +93,7 @@ public class PaymentController {
         }
 
         var user = userOpt.get();
-        var dtOpt = detailsRepository.findById(req.getTransactionId());
+        var dtOpt = detailsRepository.findById(transactionID);
 
         if (dtOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");

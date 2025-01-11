@@ -84,7 +84,7 @@ public class CarsController {
     public ResponseEntity<?> updateCar(
             @PathVariable String id,
             @RequestHeader("Authorization") String token,
-            @RequestBody Cars updatedCar
+            @RequestBody CarsDTO updatedCar
     ){
         if(!authService.isAdmin(token)){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Only admin can update cars");
@@ -94,9 +94,14 @@ public class CarsController {
         if(carOPT.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found");
         }
+
+        Optional<CarType> carType = carTypeRepository.findById(updatedCar.getCar_type_id());
+        if(carType.isEmpty()){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("CarType not found");
+        }
         Cars existingCar = carOPT.get();
         //aktualizuj pola (oprócz ID)
-        existingCar.setCarType(updatedCar.getCarType()); //jeśli chcesz
+        existingCar.setCarType(carType.get()); //jeśli chcesz
         existingCar.setYear(updatedCar.getYear());
         existingCar.setColor(updatedCar.getColor());
         existingCar.setPrice_per_day(updatedCar.getPrice_per_day());

@@ -14,7 +14,6 @@ import com.example.CarSharing.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -111,7 +110,7 @@ public class ReservationController {
         boolean isAvailable = existingReservations.stream()
                 .filter(dt -> dt.getStatus() != DetailsStatusEnum.canceled)
                 .noneMatch(dt ->
-                        req.getStartDate().isBefore(dt.getEnd_date()) && req.getEndDate().isAfter(dt.getStart_date())
+                        req.getStartDate().isBefore(dt.getEndDate()) && req.getEndDate().isAfter(dt.getStartDate())
                 );
 
         if (!isAvailable) {
@@ -121,28 +120,26 @@ public class ReservationController {
         DetailsOfTransaction dt = new DetailsOfTransaction();
         dt.setCar(car);
         dt.setUser(user);
-        dt.setStart_date(req.getStartDate());
-        dt.setEnd_date(req.getEndDate());
+        dt.setStartDate(req.getStartDate());
+        dt.setEndDate(req.getEndDate());
         dt.setStatus(DetailsStatusEnum.during);
 
-        long days = ChronoUnit.DAYS.between(req.getStartDate(), req.getEndDate());
-        if (days < 1) days = 1;
+        long hours = ChronoUnit.HOURS.between(req.getStartDate(), req.getEndDate());
+        long days = (long) Math.ceil((double) hours / 24);
 
         dt.setPrice(days * car.getPrice_per_day());
         detailsRepository.save(dt);
-
-        car.setStatus(CarsStatusEnum.rent);
-        carsRepository.save(car);
 
         return ResponseEntity.ok("Reserved transactionId=" + dt.getId());
     }
 
 
     //modyfikacja rezerwacji
-    @PutMapping("/modify")
+    @PutMapping("/modify/{transactionID}")
     public ResponseEntity<?> modifyReservation(
             @RequestHeader("Authorization") String token,
-            @RequestBody UpdateRequest req
+            @RequestBody UpdateRequest req,
+            @PathVariable long transactionID
     ) {
         var userOpt = usersRepository.findByToken(token);
         if (userOpt.isEmpty()) {
@@ -150,7 +147,7 @@ public class ReservationController {
         }
 
         var user = userOpt.get();
-        var dtOpt = detailsRepository.findById(req.getTransactionId());
+        var dtOpt = detailsRepository.findById(transactionID);
 
         if (dtOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Transaction not found");
@@ -167,15 +164,16 @@ public class ReservationController {
         }
 
         //czy nowy okres ma tyle samo dni co poprzedni
-        long originalDays = ChronoUnit.DAYS.between(dt.getStart_date(), dt.getEnd_date());
-        long newDays = ChronoUnit.DAYS.between(req.getNewStart(), req.getNewEnd());
+        long originalHours = ChronoUnit.HOURS.between(dt.getStartDate(), dt.getEndDate());
+        long newHours = ChronoUnit.HOURS.between(req.getNewStart(), req.getNewEnd());
+
+        // Przeliczamy godziny na dni zaokrąglone w górę
+        long originalDays = (long) Math.ceil((double) originalHours / 24);
+        long newDays = (long) Math.ceil((double) newHours / 24);
+
         if (originalDays != newDays) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("New reservation period must have the same number of days as the original");
         }
-
-        if(newDays<1)
-            newDays=1;
-
 
         //czy data startu nie jest późniejsza niż data zakończenia
         if (req.getNewStart().isAfter(req.getNewEnd())) {
@@ -187,15 +185,15 @@ public class ReservationController {
         boolean isAvailable = existingReservations.stream()
                 .filter(existingDt -> !existingDt.getId().equals(dt.getId()) && existingDt.getStatus() != DetailsStatusEnum.canceled)
                 .noneMatch(existingDt ->
-                        req.getNewStart().isBefore(existingDt.getEnd_date()) && req.getNewEnd().isAfter(existingDt.getStart_date())
+                        req.getNewStart().isBefore(existingDt.getEndDate()) && req.getNewEnd().isAfter(existingDt.getStartDate())
                 );
 
         if (!isAvailable) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Car is not available in the new selected period");
         }
 
-        dt.setStart_date(req.getNewStart());
-        dt.setEnd_date(req.getNewEnd());
+        dt.setStartDate(req.getNewStart());
+        dt.setEndDate(req.getNewEnd());
         dt.setPrice(dt.getCar().getPrice_per_day() * newDays);
 
         detailsRepository.save(dt);

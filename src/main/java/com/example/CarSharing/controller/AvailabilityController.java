@@ -1,5 +1,6 @@
 package com.example.CarSharing.controller;
 
+import com.example.CarSharing.Interfaces.TransactionDateProjection;
 import com.example.CarSharing.model.Cars;
 import com.example.CarSharing.model.DetailsOfTransaction;
 import com.example.CarSharing.model.enums.CarsStatusEnum;
@@ -70,7 +71,7 @@ public class AvailabilityController {
                     List<DetailsOfTransaction> dtList = detailsRepository.findByCarId(car.getId());
                     boolean collision = dtList.stream()
                             .filter(dt -> dt.getStatus() != DetailsStatusEnum.canceled)
-                            .anyMatch(dt -> start.isBefore(dt.getEnd_date()) && end.isAfter(dt.getStart_date()));
+                            .anyMatch(dt -> start.isBefore(dt.getEndDate()) && end.isAfter(dt.getStartDate()));
                     return !collision;
                 })
                 .toList();
@@ -111,8 +112,14 @@ public class AvailabilityController {
         List<DetailsOfTransaction> dtList = detailsRepository.findByCarId(car.getId());
         boolean isAvailable = dtList.stream()
                 .filter(dt -> dt.getStatus() != DetailsStatusEnum.canceled)
-                .noneMatch(dt -> startDate.isBefore(dt.getEnd_date()) && endDate.isAfter(dt.getStart_date()));
+                .noneMatch(dt -> startDate.isBefore(dt.getEndDate()) && endDate.isAfter(dt.getStartDate()));
 
         return ResponseEntity.ok(isAvailable ? "Car is available" : "Car is not available");
+    }
+
+    @GetMapping("/not-available/{CarID}")
+    public ResponseEntity<?> whenCarIsNotAvailable(@PathVariable String CarID){
+        List<TransactionDateProjection> list = detailsRepository.findByCarIdAndStartDateAfterAndStatusNot(CarID, LocalDateTime.now(),DetailsStatusEnum.canceled);
+        return ResponseEntity.ok(list);
     }
 }

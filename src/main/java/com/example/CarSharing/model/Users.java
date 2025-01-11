@@ -1,11 +1,12 @@
 package com.example.CarSharing.model;
 
 import com.example.CarSharing.model.enums.UsersRoleEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
 import java.time.LocalDate;
 
@@ -15,16 +16,25 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
+    @NotBlank(message = "Name cannot be empty")
     private String name;
+    @NotBlank(message = "Surname cannot be empty")
     private String surname;
+    @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Invalid email format")
     private String email;
+    @NotBlank(message = "Password cannot be empty")
     private String password;
+    @JsonIgnore
     private String token;
+    @NotNull(message = "Date of birth cannot be null")
     private LocalDate date_of_birth;
+    @NotBlank(message = "Country cannot be empty")
     private String country;
 
     @Enumerated(EnumType.STRING)

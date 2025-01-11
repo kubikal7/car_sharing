@@ -23,9 +23,11 @@ public class DetailsOfTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime start_date;
+    @Column(name="start_date")
+    private LocalDateTime startDate;
 
-    private LocalDateTime end_date;
+    @Column(name="end_date")
+    private LocalDateTime endDate;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
