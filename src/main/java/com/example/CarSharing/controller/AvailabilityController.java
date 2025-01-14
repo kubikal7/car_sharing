@@ -57,11 +57,9 @@ public class AvailabilityController {
 
     //endpoint sprawdzania dostępności wszystkich samochodów
     @GetMapping("/available")
-    public ResponseEntity<?> getAvailableCars(@RequestBody AvailabilityRequest req) {
-        LocalDateTime start = req.getStartDate();
-        LocalDateTime end = req.getEndDate();
+    public ResponseEntity<?> getAvailableCars(@RequestParam("startDate") LocalDateTime startDate, @RequestParam("endDate") LocalDateTime endDate) {
 
-        if (start == null || end == null) {
+        if (startDate == null || endDate == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Start and end dates are required.");
         }
 
@@ -71,7 +69,7 @@ public class AvailabilityController {
                     List<DetailsOfTransaction> dtList = detailsRepository.findByCarId(car.getId());
                     boolean collision = dtList.stream()
                             .filter(dt -> dt.getStatus() != DetailsStatusEnum.canceled)
-                            .anyMatch(dt -> start.isBefore(dt.getEndDate()) && end.isAfter(dt.getStartDate()));
+                            .anyMatch(dt -> startDate.isBefore(dt.getEndDate()) && endDate.isAfter(dt.getStartDate()));
                     return !collision;
                 })
                 .toList();
