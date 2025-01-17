@@ -36,6 +36,15 @@ public class AuthController {
         private String password;
     }
 
+    @GetMapping("/isadmin")
+    public ResponseEntity<?> isAdmin(@RequestHeader("Authorization") String authorizationToken){
+        if(!authService.isAdmin(authorizationToken)){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        else
+            return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         Optional<Users> userOPT = usersRepository.findByEmail(loginRequest.getEmail());
