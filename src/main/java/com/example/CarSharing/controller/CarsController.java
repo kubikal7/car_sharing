@@ -120,4 +120,22 @@ public class CarsController {
                 .toList();
         return ResponseEntity.ok(availableCars);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> updateCar(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String token
+    ) {
+        if (!authService.isAdmin(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Only admin can delete cars");
+        }
+
+        Optional<Cars> carOPT = carsRepository.findById(id);
+        if (carOPT.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Car not found");
+        }
+
+        carsRepository.deleteById(id);
+        return ResponseEntity.ok().body("Deleted");
+    }
 }
