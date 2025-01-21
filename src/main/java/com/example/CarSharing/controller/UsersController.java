@@ -57,7 +57,6 @@ public class UsersController {
         user.setEmail(userBody.getEmail());
         user.setCountry(userBody.getCountry());
         user.setSurname(userBody.getSurname());
-        user.setPassword(passwordEncoder.encode(userBody.getPassword()));
         user.setDate_of_birth(userBody.getDate_of_birth());
         return ResponseEntity.ok(usersRepository.save(user));
     }
